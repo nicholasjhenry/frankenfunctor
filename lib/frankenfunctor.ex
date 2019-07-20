@@ -1,0 +1,2 @@
+defmodule Frankenfunctor do
+end
