@@ -1,7 +1,19 @@
 defmodule FrankenfunctorTest do
   use ExUnit.Case
 
-  alias Frankenfunctor.{DeadLeftBrokenArm, DeadLeftLeg, LiveLeftArm, LiveLeftLeg, M, VitalForce}
+  alias Frankenfunctor.{
+    DeadLeftBrokenArm,
+    DeadLeftLeg,
+    DeadRightLowerArm,
+    DeadRightUpperArm,
+    LiveLeftArm,
+    LiveLeftLeg,
+    LiveRightArm,
+    LiveRightLowerArm,
+    LiveRightUpperArm,
+    M,
+    VitalForce
+  }
 
   import Frankenfunctor
 
@@ -36,5 +48,26 @@ defmodule FrankenfunctorTest do
 
     assert live_left_arm == LiveLeftArm.new("Victor", VitalForce.new(1))
     assert remaining_after_left_arm == VitalForce.new(9)
+  end
+
+  test "right arm" do
+    dead_right_lower_arm = DeadRightLowerArm.new("Tom")
+    lower_right_arm_m = make_live_right_lower_arm(dead_right_lower_arm)
+    dead_right_upper_arm = DeadRightUpperArm.new("Jerry")
+    upper_right_arm_m = make_live_right_upper_arm(dead_right_upper_arm)
+    vf = VitalForce.new(10)
+
+    arm_surgery_m = fn m1, m2 -> map2_m(m1, m2, &arm_surgery/2) end
+    right_arm_m = arm_surgery_m.(lower_right_arm_m, upper_right_arm_m)
+
+    {live_right_arm, remaining_from_right_arm} = M.run_m(right_arm_m, vf)
+
+    assert live_right_arm ==
+             LiveRightArm.new(
+               LiveRightLowerArm.new("Tom", VitalForce.new(1)),
+               LiveRightUpperArm.new("Jerry", VitalForce.new(1))
+             )
+
+    assert remaining_from_right_arm == VitalForce.new(8)
   end
 end

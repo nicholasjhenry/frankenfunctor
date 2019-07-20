@@ -64,6 +64,45 @@ defmodule Frankenfunctor do
     end
   end
 
+  defmodule DeadRightLowerArm do
+    @type t :: {:dead_right_lower_arm, Label.t()}
+
+    @spec new(Label.t()) :: t
+    def new(label), do: {:dead_right_lower_arm, label}
+  end
+
+  defmodule DeadRightUpperArm do
+    @type t :: {:dead_right_upper_arm, Label.t()}
+
+    @spec new(Label.t()) :: t
+    def new(label), do: {:dead_right_upper_arm, label}
+  end
+
+  defmodule LiveRightLowerArm do
+    @type t :: {{:live_right_lower_arm, Label.t()}, VitalForce.t()}
+
+    def new(label, vital_force) do
+      {{:live_right_lower_arm, label}, vital_force}
+    end
+  end
+
+  defmodule LiveRightUpperArm do
+    @type t :: {{:live_right_upper_arm, Label.t()}, VitalForce.t()}
+
+    def new(label, vital_force) do
+      {{:live_right_upper_arm, label}, vital_force}
+    end
+  end
+
+  defmodule LiveRightArm do
+    defstruct [:lower_arm, :upper_arm]
+    @type t :: %__MODULE__{lower_arm: LiveRightLowerArm.t(), upper_arm: LiveRightUpperArm}
+
+    def new(lower_arm, upper_arm) do
+      %__MODULE__{lower_arm: lower_arm, upper_arm: upper_arm}
+    end
+  end
+
   defmodule M do
     @type t(live_body_part) :: {:m, (VitalForce.t() -> {live_body_part, VitalForce})}
 
@@ -127,6 +166,44 @@ defmodule Frankenfunctor do
       {one_unit, remaining_vital_force} = VitalForce.get_vital_force(vital_force)
       live_left_broken_arm = LiveLeftBrokenArm.new(label, one_unit)
       {live_left_broken_arm, remaining_vital_force}
+    end
+
+    M.new(become_alive)
+  end
+
+  def arm_surgery(lower_arm, upper_arm) do
+    %LiveRightArm{lower_arm: lower_arm, upper_arm: upper_arm}
+  end
+
+  @spec map2_m(M.t(a :: any), M.t(b :: any), (a :: any, b :: any -> c :: any)) :: M.t(c :: any)
+  def map2_m(m1, m2, func) do
+    become_alive = fn vital_force ->
+      {v1, remaining_vital_force} = M.run_m(m1, vital_force)
+      {v2, remaining_vital_force_2} = M.run_m(m2, remaining_vital_force)
+      v3 = func.(v1, v2)
+      {v3, remaining_vital_force_2}
+    end
+
+    M.new(become_alive)
+  end
+
+  @spec make_live_right_lower_arm(DeadRightLowerArm.t()) :: M.t(LiveRightLowerArm.t())
+  def make_live_right_lower_arm({:dead_right_lower_arm, label}) do
+    become_alive = fn vital_force ->
+      {one_unit, remaining_vital_force} = VitalForce.get_vital_force(vital_force)
+      live_right_lower_arm = LiveRightLowerArm.new(label, one_unit)
+      {live_right_lower_arm, remaining_vital_force}
+    end
+
+    M.new(become_alive)
+  end
+
+  @spec make_live_right_upper_arm(DeadRightUpperArm.t()) :: M.t(LiveRightUpperArm.t())
+  def make_live_right_upper_arm({:dead_right_upper_arm, label}) do
+    become_alive = fn vital_force ->
+      {one_unit, remaining_vital_force} = VitalForce.get_vital_force(vital_force)
+      live_right_upper_arm = LiveRightUpperArm.new(label, one_unit)
+      {live_right_upper_arm, remaining_vital_force}
     end
 
     M.new(become_alive)

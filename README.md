@@ -2,4 +2,4 @@
 
 https://fsharpforfunandprofit.com/posts/monadster/
 
-Next: https://fsharpforfunandprofit.com/posts/monadster/#the-right-arm
+Next: https://fsharpforfunandprofit.com/posts/monadster-2/#the-head
