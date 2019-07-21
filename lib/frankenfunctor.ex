@@ -113,6 +113,12 @@ defmodule Frankenfunctor do
     def run_m({:m, func}, vf) do
       func.(vf)
     end
+
+    def return_m(x) do
+      become_alive = fn vital_force -> {x, vital_force} end
+
+      new(become_alive)
+    end
   end
 
   @spec make_live_left_leg_m(DeadLeftLeg.t()) :: M.t(LiveLeftLeg.t())
@@ -204,6 +210,56 @@ defmodule Frankenfunctor do
       {one_unit, remaining_vital_force} = VitalForce.get_vital_force(vital_force)
       live_right_upper_arm = LiveRightUpperArm.new(label, one_unit)
       {live_right_upper_arm, remaining_vital_force}
+    end
+
+    M.new(become_alive)
+  end
+
+  defmodule DeadBrain do
+    @type t :: {:dead_brain, Label.t()}
+
+    def new(label) do
+      {:dead_brain, label}
+    end
+  end
+
+  defmodule Skull do
+    @type t :: {:skull, Label.t()}
+
+    def new(label) do
+      {:skull, label}
+    end
+  end
+
+  defmodule LiveBrain do
+    @type t :: {{:live_brain, Label.t()}, VitalForce.t()}
+
+    def new(label, vital_force) do
+      {{:live_brain, label}, vital_force}
+    end
+  end
+
+  defmodule LiveHead do
+    defstruct [:brain, :skull]
+
+    @type t :: %__MODULE__{brain: LiveBrain.t(), skull: Skull.t()}
+
+    def new(brain, skull) do
+      %__MODULE__{brain: brain, skull: skull}
+    end
+  end
+
+  def head_surgery(brain, skull) do
+    LiveHead.new(brain, skull)
+  end
+
+  @spec make_live_brain_m(DeadBrain.t()) :: M.t(LiveBrain.t())
+  def make_live_brain_m({:dead_brain, label}) do
+    become_alive = fn vital_force ->
+      {one_unit, remaining_vital_force} = VitalForce.get_vital_force(vital_force)
+      live_brain = LiveBrain.new(label, one_unit)
+
+      {live_brain, remaining_vital_force}
     end
 
     M.new(become_alive)

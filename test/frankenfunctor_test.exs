@@ -2,16 +2,20 @@ defmodule FrankenfunctorTest do
   use ExUnit.Case
 
   alias Frankenfunctor.{
+    DeadBrain,
     DeadLeftBrokenArm,
     DeadLeftLeg,
     DeadRightLowerArm,
     DeadRightUpperArm,
+    LiveBrain,
+    LiveHead,
     LiveLeftArm,
     LiveLeftLeg,
     LiveRightArm,
     LiveRightLowerArm,
     LiveRightUpperArm,
     M,
+    Skull,
     VitalForce
   }
 
@@ -69,5 +73,25 @@ defmodule FrankenfunctorTest do
              )
 
     assert remaining_from_right_arm == VitalForce.new(8)
+  end
+
+  test "live head" do
+    dead_brain = DeadBrain.new("Abby Normal")
+    skull = Skull.new("Yorick")
+
+    live_brain_m = make_live_brain_m(dead_brain)
+    skull_m = M.return_m(skull)
+
+    head_surgery_m = fn m1, m2 -> map2_m(m1, m2, &head_surgery/2) end
+    head_m = head_surgery_m.(live_brain_m, skull_m)
+
+    vf = VitalForce.new(10)
+
+    {live_head, remaining_from_head} = M.run_m(head_m, vf)
+
+    assert live_head ==
+             LiveHead.new(LiveBrain.new("Abby Normal", VitalForce.new(1)), Skull.new("Yorick"))
+
+    assert remaining_from_head == VitalForce.new(9)
   end
 end

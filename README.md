@@ -2,4 +2,4 @@
 
 https://fsharpforfunandprofit.com/posts/monadster/
 
-Next: https://fsharpforfunandprofit.com/posts/monadster-2/#the-head
+Next: https://fsharpforfunandprofit.com/posts/monadster-2/#the-beating-heart
