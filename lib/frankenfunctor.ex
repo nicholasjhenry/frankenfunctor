@@ -264,4 +264,52 @@ defmodule Frankenfunctor do
 
     M.new(become_alive)
   end
+
+  defmodule DeadHeart do
+    @type t :: {:dead_heart, Label.t()}
+
+    def new(label) do
+      {:dead_heart, label}
+    end
+  end
+
+  defmodule LiveHeart do
+    @type t :: {{:live_heart, Label.t()}, VitalForce.t()}
+
+    def new(label, vital_force) do
+      {{:live_heart, label}, vital_force}
+    end
+  end
+
+  defmodule BeatingHeart do
+    @type t :: {:beating_heart, {LiveHeart.t(), VitalForce.t()}}
+
+    def new(live_heart, vital_force) do
+      {:beating_heart, {live_heart, vital_force}}
+    end
+  end
+
+  @spec make_live_heart(DeadHeart.t()) :: M.t(LiveHeart.t())
+  def make_live_heart({:dead_heart, label}) do
+    become_alive = fn vital_force ->
+      {one_unit, remaining_vital_force} = VitalForce.get_vital_force(vital_force)
+      live_heart = LiveHeart.new(label, one_unit)
+
+      {live_heart, remaining_vital_force}
+    end
+
+    M.new(become_alive)
+  end
+
+  @spec make_beating_heart(LiveHeart.t()) :: M.t(BeatingHeart.t())
+  def make_beating_heart(live_heart) do
+    become_alive = fn vital_force ->
+      {one_unit, remaining_vital_force} = VitalForce.get_vital_force(vital_force)
+      live_heart = BeatingHeart.new(live_heart, one_unit)
+
+      {live_heart, remaining_vital_force}
+    end
+
+    M.new(become_alive)
+  end
 end
